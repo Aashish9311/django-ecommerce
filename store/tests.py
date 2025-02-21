@@ -7,7 +7,7 @@ from django.urls import reverse
 
 class BasicTests(TestCase):
     def test_homepage_status_code(self):
-        response = self.client.get(reverse('home'))  # Assuming 'home' is your homepage URL name
+        response = self.client.get(reverse('store'))  # Assuming 'store' is your homepage URL name
         self.assertEqual(response.status_code, 200)
 
     def test_dummy_case(self):

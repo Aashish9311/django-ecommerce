@@ -22,7 +22,6 @@ from store import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('store.urls')),
-    path('test/', views.test_pipeline, name="test_pipeline"),  # New route
 
 ]
 
