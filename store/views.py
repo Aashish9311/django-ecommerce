@@ -90,3 +90,6 @@ def processOrder(request):
 		)
 
 	return JsonResponse('Payment submitted..', safe=False)
+
+def test_pipeline(request):
+    return JsonResponse({'message': 'CI/CD Pipeline is working!'})
