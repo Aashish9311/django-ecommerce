@@ -4,6 +4,8 @@ import json
 import datetime
 from .models import * 
 from .utils import cookieCart, cartData, guestOrder
+from django.contrib import messages
+
 
 # def store(request):
 # 	data = cartData(request)
@@ -16,6 +18,22 @@ from .utils import cookieCart, cartData, guestOrder
 # 	context = {'products':products, 'cartItems':cartItems}
 # 	return render(request, 'store/store.html', context)
 
+# def store(request):
+#     data = cartData(request)
+
+#     cartItems = data['cartItems']
+#     order = data['order']
+#     items = data['items']
+
+#     products = Product.objects.all()
+# 	messages.success(request, "Deployment Successful!")
+#     context = {
+#         'products': products,
+#         'cartItems': cartItems,
+#         'test_message': 'CI/CD Deployment Successful!'
+#     }
+#     return render(request, 'store/store.html', context)
+
 def store(request):
     data = cartData(request)
 
@@ -24,13 +42,16 @@ def store(request):
     items = data['items']
 
     products = Product.objects.all()
+    
+    # ✅ Correct indentation for messages.success
+    messages.success(request, "Deployment Successful!")
+
     context = {
         'products': products,
         'cartItems': cartItems,
         'test_message': 'CI/CD Deployment Successful!'
     }
     return render(request, 'store/store.html', context)
-
 
 def cart(request):
 	data = cartData(request)
