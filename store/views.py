@@ -44,12 +44,12 @@ def store(request):
     products = Product.objects.all()
     
     # ✅ Correct indentation for messages.success
-    messages.success(request, "Deployment Successful! Done")
+    messages.success(request, "Deployment Successful!")
 
     context = {
         'products': products,
         'cartItems': cartItems,
-        'test_message': 'CI/CD Deployment Successful!'
+        'test_message': 'CI/CD Deployment Successful! Done'
     }
     return render(request, 'store/store.html', context)
 
