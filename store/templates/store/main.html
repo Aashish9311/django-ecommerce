@@ -90,7 +90,7 @@
 
      <div class="container">
             <br>
-			{% if messages %}
+			<!-- {% if messages %}
     {% for message in messages %}
         <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
             {{ message }}
@@ -99,6 +99,11 @@
             </button>
         </div>
     {% endfor %}
+{% endif %} -->
+{% if messages %}
+{% for message in messages %}
+  <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+{% endfor %}
 {% endif %}
 
             {% block content %}
