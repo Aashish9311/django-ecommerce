@@ -425,88 +425,88 @@
 
 
 
-# name: CI/CD Pipeline for Django on Minikube
+name: CI/CD Pipeline for Django on Minikube
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   build-and-push:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout Repository
-#         uses: actions/checkout@v3
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-#       - name: Set up Docker Buildx
-#         uses: docker/setup-buildx-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-#       - name: Login to Docker Hub
-#         uses: docker/login-action@v2
-#         with:
-#           username: ${{ secrets.DOCKER_USERNAME }}
-#           password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-#       - name: Build and Push Docker Image
-#         run: |
-#           docker build -t aashish9311/django-app:latest .
-#           docker push aashish9311/django-app:latest
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t aashish9311/django-app:latest .
+          docker push aashish9311/django-app:latest
 
-#   deploy:
-#     runs-on: ubuntu-latest
-#     needs: build-and-push
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
 
-#     steps:
-#       - name: Checkout Repository
-#         uses: actions/checkout@v3
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-#       - name: Set up kubectl
-#         uses: azure/setup-kubectl@v3
-#         with:
-#           version: 'latest'
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
 
-#       - name: Set Up Minikube
-#         run: |
-#           curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-#           chmod +x minikube
-#           sudo mv minikube /usr/local/bin/
-#           minikube start --driver=docker --memory=4096 --cpus=2
-#           minikube status
+      - name: Set Up Minikube
+        run: |
+          curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          chmod +x minikube
+          sudo mv minikube /usr/local/bin/
+          minikube start --driver=docker --memory=4096 --cpus=2
+          minikube status
 
-#       - name: Configure kubectl to use Minikube
-#         run: |
-#           minikube kubectl -- config view --raw > $HOME/.kube/config
-#           kubectl cluster-info
-#           kubectl get nodes
+      - name: Configure kubectl to use Minikube
+        run: |
+          minikube kubectl -- config view --raw > $HOME/.kube/config
+          kubectl cluster-info
+          kubectl get nodes
 
-#       - name: Apply Kubernetes Manifests
-#         run: |
-#           kubectl apply -f k8s/deployment.yaml
-#           kubectl apply -f k8s/service.yaml
-#           kubectl get all
+      - name: Apply Kubernetes Manifests
+        run: |
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl get all
 
-#       - name: Debug Kubernetes Pods
-#         run: |
-#           kubectl get pods -o wide
-#           kubectl get events --sort-by=.metadata.creationTimestamp
+      - name: Debug Kubernetes Pods
+        run: |
+          kubectl get pods -o wide
+          kubectl get events --sort-by=.metadata.creationTimestamp
 
-#       - name: Wait for deployment to be ready
-#         run: |
-#           kubectl rollout status deployment/django-app --timeout=120s || kubectl get pods
+      - name: Wait for deployment to be ready
+        run: |
+          kubectl rollout status deployment/django-app --timeout=120s || kubectl get pods
 
-#       - name: Debug Pod Logs (if deployment fails)
-#         if: failure()
-#         run: |
-#           POD_NAME=$(kubectl get pods -l app=django-app -o jsonpath="{.items[0].metadata.name}")
-#           kubectl describe pod $POD_NAME
-#           kubectl logs $POD_NAME
+      - name: Debug Pod Logs (if deployment fails)
+        if: failure()
+        run: |
+          POD_NAME=$(kubectl get pods -l app=django-app -o jsonpath="{.items[0].metadata.name}")
+          kubectl describe pod $POD_NAME
+          kubectl logs $POD_NAME
 
-#       - name: Restart Deployment (if needed)
-#         if: failure()
-#         run: |
-#           kubectl rollout restart deployment/django-app
-#           kubectl rollout status deployment/django-app --timeout=120s
+      - name: Restart Deployment (if needed)
+        if: failure()
+        run: |
+          kubectl rollout restart deployment/django-app
+          kubectl rollout status deployment/django-app --timeout=120s
 
 
 
@@ -617,96 +617,96 @@
 
 
 
-name: CI/CD Pipeline for Django on Minikube
+# name: CI/CD Pipeline for Django on Minikube
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v2
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and Push Docker Image
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          docker build -t aashish9311/django-app:$IMAGE_TAG .
-          docker push aashish9311/django-app:$IMAGE_TAG
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+#       - name: Build and Push Docker Image
+#         run: |
+#           IMAGE_TAG=${{ github.sha }}
+#           docker build -t aashish9311/django-app:$IMAGE_TAG .
+#           docker push aashish9311/django-app:$IMAGE_TAG
+#           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-push
+#   deploy:
+#     runs-on: ubuntu-latest
+#     needs: build-and-push
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
 
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
+#       - name: Set up kubectl
+#         uses: azure/setup-kubectl@v3
+#         with:
+#           version: 'latest'
 
-      - name: Set Up Minikube
-        run: |
-          curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-          chmod +x minikube
-          sudo mv minikube /usr/local/bin/
-          minikube start --driver=docker
-          minikube status
+#       - name: Set Up Minikube
+#         run: |
+#           curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+#           chmod +x minikube
+#           sudo mv minikube /usr/local/bin/
+#           minikube start --driver=docker
+#           minikube status
 
-      - name: Configure kubectl to use Minikube
-        run: |
-          minikube kubectl -- config view --raw > $HOME/.kube/config
-          kubectl cluster-info
-          kubectl get nodes
+#       - name: Configure kubectl to use Minikube
+#         run: |
+#           minikube kubectl -- config view --raw > $HOME/.kube/config
+#           kubectl cluster-info
+#           kubectl get nodes
 
-      - name: Update Deployment File with New Image Tag
-        run: |
-          sed -i "s|\${IMAGE_TAG}|${{ env.IMAGE_TAG }}|g" k8s/deployment.yaml
+#       - name: Update Deployment File with New Image Tag
+#         run: |
+#           sed -i "s|\${IMAGE_TAG}|${{ env.IMAGE_TAG }}|g" k8s/deployment.yaml
 
-      - name: Apply Kubernetes Manifests
-        run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl get all
+#       - name: Apply Kubernetes Manifests
+#         run: |
+#           kubectl apply -f k8s/deployment.yaml
+#           kubectl apply -f k8s/service.yaml
+#           kubectl get all
 
-      - name: Debug Kubernetes Pods
-        run: |
-          kubectl get pods -o wide
-          kubectl get events --sort-by=.metadata.creationTimestamp
+#       - name: Debug Kubernetes Pods
+#         run: |
+#           kubectl get pods -o wide
+#           kubectl get events --sort-by=.metadata.creationTimestamp
 
-      - name: Wait for Deployment to be Ready
-        run: |
-          kubectl rollout status deployment/django-app --timeout=60s || kubectl get pods
+#       - name: Wait for Deployment to be Ready
+#         run: |
+#           kubectl rollout status deployment/django-app --timeout=60s || kubectl get pods
 
-      - name: Debug Pod Logs (if deployment fails)
-        if: failure()
-        run: |
-          POD_NAME=$(kubectl get pods -l app=django-app -o jsonpath="{.items[0].metadata.name}")
-          kubectl describe pod $POD_NAME
-          kubectl logs $POD_NAME
+#       - name: Debug Pod Logs (if deployment fails)
+#         if: failure()
+#         run: |
+#           POD_NAME=$(kubectl get pods -l app=django-app -o jsonpath="{.items[0].metadata.name}")
+#           kubectl describe pod $POD_NAME
+#           kubectl logs $POD_NAME
 
-      - name: Check Deployment Health and Restart if Needed
-        run: |
-          UNAVAILABLE=$(kubectl get deployment django-app -o jsonpath='{.status.unavailableReplicas}')
-          if [[ "$UNAVAILABLE" -gt 0 ]]; then
-            echo "Restarting deployment..."
-            kubectl rollout restart deployment/django-app
-            kubectl rollout status deployment/django-app --timeout=60s
-          else
-            echo "Deployment is healthy."
-          fi
+#       - name: Check Deployment Health and Restart if Needed
+#         run: |
+#           UNAVAILABLE=$(kubectl get deployment django-app -o jsonpath='{.status.unavailableReplicas}')
+#           if [[ "$UNAVAILABLE" -gt 0 ]]; then
+#             echo "Restarting deployment..."
+#             kubectl rollout restart deployment/django-app
+#             kubectl rollout status deployment/django-app --timeout=60s
+#           else
+#             echo "Deployment is healthy."
+#           fi

@@ -282,46 +282,46 @@
 
 
 
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: django-app
-# spec:
-#   replicas: 1
-#   selector:
-#     matchLabels:
-#       app: django
-#   template:
-#     metadata:
-#       labels:
-#         app: django
-#     spec:
-#       containers:
-#         - name: django
-#           image: aashish9311/django-app:latest  # Use image from Docker Hub
-#           imagePullPolicy: Always  # Ensure the latest image is pulled
-#           ports:
-#             - containerPort: 8000
-#           volumeMounts:
-#             - name: sqlite-storage
-#               mountPath: /app/db
-#       volumes:
-#         - name: sqlite-storage
-#           persistentVolumeClaim:
-#             claimName: sqlite-pvc
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: django-service
-# spec:
-#   selector:
-#     app: django
-#   ports:
-#     - protocol: TCP
-#       port: 8000
-#       targetPort: 8000
-#   type: ClusterIP
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django
+  template:
+    metadata:
+      labels:
+        app: django
+    spec:
+      containers:
+        - name: django
+          image: aashish9311/django-app:latest  # Use image from Docker Hub
+          imagePullPolicy: Always  # Ensure the latest image is pulled
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: sqlite-storage
+              mountPath: /app/db
+      volumes:
+        - name: sqlite-storage
+          persistentVolumeClaim:
+            claimName: sqlite-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-service
+spec:
+  selector:
+    app: django
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
 
 
 
@@ -367,39 +367,39 @@
 
 
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: django-app
-  labels:
-    app: django-app
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: django-app
-  template:
-    metadata:
-      labels:
-        app: django-app
-    spec:
-      containers:
-        - name: django-app
-          image: aashish9311/django-app:${{ secrets.IMAGE_TAG }}
-          ports:
-            - containerPort: 8000
-          env:
-            - name: DJANGO_SETTINGS_MODULE
-              value: "myproject.settings"
-          readinessProbe:
-            httpGet:
-              path: /
-              port: 8000
-            initialDelaySeconds: 10
-            periodSeconds: 5
-          livenessProbe:
-            httpGet:
-              path: /
-              port: 8000
-            initialDelaySeconds: 20
-            periodSeconds: 10
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: django-app
+#   labels:
+#     app: django-app
+# spec:
+#   replicas: 2
+#   selector:
+#     matchLabels:
+#       app: django-app
+#   template:
+#     metadata:
+#       labels:
+#         app: django-app
+#     spec:
+#       containers:
+#         - name: django-app
+#           image: aashish9311/django-app:${{ secrets.IMAGE_TAG }}
+#           ports:
+#             - containerPort: 8000
+#           env:
+#             - name: DJANGO_SETTINGS_MODULE
+#               value: "myproject.settings"
+#           readinessProbe:
+#             httpGet:
+#               path: /
+#               port: 8000
+#             initialDelaySeconds: 10
+#             periodSeconds: 5
+#           livenessProbe:
+#             httpGet:
+#               path: /
+#               port: 8000
+#             initialDelaySeconds: 20
+#             periodSeconds: 10
