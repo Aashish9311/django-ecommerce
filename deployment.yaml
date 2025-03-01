@@ -139,6 +139,54 @@
 
 
 
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: django-app
+#   labels:
+#     app: django
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: django
+#   template:
+#     metadata:
+#       labels:
+#         app: django
+#     spec:
+#       containers:
+#         - name: django
+#           image: django-app:latest  # Using locally built image
+#           imagePullPolicy: Never # Prevent Kubernetes from pulling from a registry
+#           ports:
+#             - containerPort: 8000
+#           volumeMounts:
+#             - name: sqlite-storage
+#               mountPath: /app/db  # Mounting SQLite database as a directory
+#       volumes:
+#         - name: sqlite-storage
+#           persistentVolumeClaim:
+#             claimName: sqlite-pvc
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: django-service
+# spec:
+#   selector:
+#     app: django
+#   ports:
+#     - protocol: TCP
+#       port: 8000
+#       targetPort: 8000
+#   type: ClusterIP
+
+
+
+
+
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -157,8 +205,8 @@ spec:
     spec:
       containers:
         - name: django
-          image: django-app:latest  # Using locally built image
-          imagePullPolicy: Never  # Prevent Kubernetes from pulling from a registry
+          image: aashish9311/django-app:latest  # Replace with your Docker Hub username
+          imagePullPolicy: Always  # Ensures the latest image is pulled
           ports:
             - containerPort: 8000
           volumeMounts:
@@ -181,5 +229,3 @@ spec:
       port: 8000
       targetPort: 8000
   type: ClusterIP
-
-
