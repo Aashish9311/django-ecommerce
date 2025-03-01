@@ -167,34 +167,64 @@ jobs:
       - name: Run Tests
         run: python manage.py test
 
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: test  # Ensures deployment happens only if tests pass
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
+
+  #     - name: Set up Minikube
+  #       uses: medyagh/setup-minikube@latest
+  #       with:
+  #         driver: docker  # Uses Docker as the Minikube driver
+
+  #     - name: Start Minikube
+  #       run: minikube start --wait=true
+
+  #     - name: Set up Docker inside Minikube
+  #       run: eval $(minikube -p minikube docker-env)
+
+  #     - name: Build and Tag Docker Image inside Minikube
+  #       run: docker build -t django-app:latest .
+
+  #     - name: Apply Kubernetes Manifests
+  #       run: |
+  #         kubectl apply -f deployment.yaml
+  #         kubectl apply -f service.yaml
+
+  #     - name: Restart Deployment to Apply Changes
+  #       run: kubectl rollout restart deployment django-app
+
+  #     - name: Verify Running Pods
+  #       run: kubectl get pods -o wide
   deploy:
-    runs-on: ubuntu-latest
-    needs: test  # Ensures deployment happens only if tests pass
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+  runs-on: ubuntu-latest
+  needs: test
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Minikube
-        uses: medyagh/setup-minikube@latest
-        with:
-          driver: docker  # Uses Docker as the Minikube driver
+    - name: Set up Minikube
+      uses: medyagh/setup-minikube@latest
+      with:
+        driver: docker
 
-      - name: Start Minikube
-        run: minikube start --wait=true
+    - name: Start Minikube
+      run: minikube start --wait=true
 
-      - name: Set up Docker inside Minikube
-        run: eval $(minikube -p minikube docker-env)
+    - name: Use Minikube Docker Daemon
+      run: eval $(minikube docker-env)
 
-      - name: Build and Tag Docker Image inside Minikube
-        run: docker build -t django-app:latest .
+    - name: Build and Tag New Docker Image Inside Minikube
+      run: |
+        docker build -t django-app:latest .
 
-      - name: Apply Kubernetes Manifests
-        run: |
-          kubectl apply -f deployment.yaml
-          kubectl apply -f service.yaml
+    - name: Restart Deployment to Use Latest Image
+      run: |
+        kubectl apply -f deployment.yaml
+        kubectl apply -f service.yaml
+        kubectl rollout restart deployment django-app  # ✅ Force update
 
-      - name: Restart Deployment to Apply Changes
-        run: kubectl rollout restart deployment django-app
-
-      - name: Verify Running Pods
-        run: kubectl get pods -o wide
+    - name: Verify Running Pods
+      run: kubectl get pods -o wide

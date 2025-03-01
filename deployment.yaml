@@ -42,6 +42,53 @@
 
 
 
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: django-app
+#   labels:
+#     app: django
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: django
+#   template:
+#     metadata:
+#       labels:
+#         app: django
+#     spec:
+#       containers:
+#         - name: django
+#           image: aashish9311/django-app:latest
+#           ports:
+#             - containerPort: 8000
+#           volumeMounts:
+#             - name: sqlite-storage
+#               mountPath: /app/db  # ✅ Mounting as a directory
+#       volumes:
+#         - name: sqlite-storage
+#           persistentVolumeClaim:
+#             claimName: sqlite-pvc
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: django-service
+# spec:
+#   selector:
+#     app: django
+#   ports:
+#     - protocol: TCP
+#       port: 8000
+#       targetPort: 8000
+#   type: ClusterIP
+
+
+
+
+
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -60,7 +107,8 @@ spec:
     spec:
       containers:
         - name: django
-          image: aashish9311/django-app:latest
+          image: django-app:latest  # ✅ Use local Minikube image
+          imagePullPolicy: Never  # ✅ Prevent pulling from Docker Hub
           ports:
             - containerPort: 8000
           volumeMounts:
