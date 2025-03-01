@@ -282,46 +282,46 @@
 
 
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: django-app
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: django
-  template:
-    metadata:
-      labels:
-        app: django
-    spec:
-      containers:
-        - name: django
-          image: aashish9311/django-app:latest  # Use image from Docker Hub
-          imagePullPolicy: Always  # Ensure the latest image is pulled
-          ports:
-            - containerPort: 8000
-          volumeMounts:
-            - name: sqlite-storage
-              mountPath: /app/db
-      volumes:
-        - name: sqlite-storage
-          persistentVolumeClaim:
-            claimName: sqlite-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: django-service
-spec:
-  selector:
-    app: django
-  ports:
-    - protocol: TCP
-      port: 8000
-      targetPort: 8000
-  type: ClusterIP
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: django-app
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: django
+#   template:
+#     metadata:
+#       labels:
+#         app: django
+#     spec:
+#       containers:
+#         - name: django
+#           image: aashish9311/django-app:latest  # Use image from Docker Hub
+#           imagePullPolicy: Always  # Ensure the latest image is pulled
+#           ports:
+#             - containerPort: 8000
+#           volumeMounts:
+#             - name: sqlite-storage
+#               mountPath: /app/db
+#       volumes:
+#         - name: sqlite-storage
+#           persistentVolumeClaim:
+#             claimName: sqlite-pvc
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: django-service
+# spec:
+#   selector:
+#     app: django
+#   ports:
+#     - protocol: TCP
+#       port: 8000
+#       targetPort: 8000
+#   type: ClusterIP
 
 
 
@@ -403,3 +403,123 @@ spec:
 #               port: 8000
 #             initialDelaySeconds: 20
 #             periodSeconds: 10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: django-app
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: django
+#   template:
+#     metadata:
+#       labels:
+#         app: django
+#     spec:
+#       containers:
+#         - name: django
+#           image: aashish9311/django-app:latest  # Use image from Docker Hub
+#           imagePullPolicy: Always  # Ensure the latest image is pulled
+#           ports:
+#             - containerPort: 8080  # Changed to 8080
+#           volumeMounts:
+#             - name: sqlite-storage
+#               mountPath: /app/db
+#       volumes:
+#         - name: sqlite-storage
+#           persistentVolumeClaim:
+#             claimName: sqlite-pvc
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: django-service
+# spec:
+#   selector:
+#     app: django
+#   ports:
+#     - protocol: TCP
+#       port: 8080  # Changed to 8080
+#       targetPort: 8080  # Changed to 8080
+#   type: NodePort  # Changed to NodePort for external access
+
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django
+  template:
+    metadata:
+      labels:
+        app: django
+    spec:
+      containers:
+        - name: django
+          image: aashish9311/django-app:latest  # Ensure the latest image is used
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: sqlite-storage
+              mountPath: /app/db
+      volumes:
+        - name: sqlite-storage
+          persistentVolumeClaim:
+            claimName: sqlite-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-service
+spec:
+  selector:
+    app: django
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 31000
+  type: NodePort
+
