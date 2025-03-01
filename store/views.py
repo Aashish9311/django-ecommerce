@@ -49,7 +49,7 @@ def store(request):
     context = {
         'products': products,
         'cartItems': cartItems,
-        'test_message': 'CI/CD Deployment Successful! Done'
+        'test_message': 'Welcome to My Updated Django App!'
     }
     return render(request, 'store/store.html', context)
 
