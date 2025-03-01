@@ -357,25 +357,92 @@
 
 
 
+# name: CI/CD Pipeline for Django on Minikube
+
+# on:
+#   push:
+#     branches:
+#       - main  # Change branch name if needed
+
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v2
+
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v2
+
+#       - name: Log in to Docker Hub
+#         uses: docker/login-action@v2
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+
+#       - name: Build and Push Docker Image
+#         run: |
+#           docker build -t ${{ secrets.DOCKER_USERNAME }}/django-app:latest .
+#           docker push ${{ secrets.DOCKER_USERNAME }}/django-app:latest
+
+#   deploy:
+#     needs: build-and-push
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v2
+
+#       - name: Set up kubectl
+#         run: |
+#           curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+#           chmod +x kubectl
+#           sudo mv kubectl /usr/local/bin/
+
+#       - name: Set Up Minikube
+#         run: |
+#           curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+#           chmod +x minikube-linux-amd64
+#           sudo mv minikube-linux-amd64 /usr/local/bin/minikube
+#           minikube start --driver=docker
+
+#       - name: Configure kubectl to use Minikube
+#         run: |
+#           minikube kubectl -- get po -A
+
+#       - name: Apply Kubernetes Manifests
+#         run: |
+#           kubectl delete deployment django-app || true
+#           kubectl apply -f deployment.yaml
+#           kubectl rollout restart deployment django-app
+
+#       - name: Wait for deployment to be ready
+#         run: kubectl rollout status deployment/django-app
+
+
+
+
+
+
 name: CI/CD Pipeline for Django on Minikube
 
 on:
   push:
     branches:
-      - main  # Change branch name if needed
+      - main
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Log in to Docker Hub
+      - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -383,39 +450,60 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/django-app:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/django-app:latest
+          docker build -t aashish9311/django-app:latest .
+          docker push aashish9311/django-app:latest
 
   deploy:
-    needs: build-and-push
     runs-on: ubuntu-latest
+    needs: build-and-push
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up kubectl
-        run: |
-          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
 
       - name: Set Up Minikube
         run: |
-          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-          chmod +x minikube-linux-amd64
-          sudo mv minikube-linux-amd64 /usr/local/bin/minikube
-          minikube start --driver=docker
+          curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          chmod +x minikube
+          sudo mv minikube /usr/local/bin/
+          minikube start --driver=docker --memory=4096 --cpus=2
+          minikube status
 
       - name: Configure kubectl to use Minikube
         run: |
-          minikube kubectl -- get po -A
+          minikube kubectl -- config view --raw > $HOME/.kube/config
+          kubectl cluster-info
+          kubectl get nodes
 
       - name: Apply Kubernetes Manifests
         run: |
-          kubectl delete deployment django-app || true
-          kubectl apply -f deployment.yaml
-          kubectl rollout restart deployment django-app
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl get all
+
+      - name: Debug Kubernetes Pods
+        run: |
+          kubectl get pods -o wide
+          kubectl get events --sort-by=.metadata.creationTimestamp
 
       - name: Wait for deployment to be ready
-        run: kubectl rollout status deployment/django-app
+        run: |
+          kubectl rollout status deployment/django-app --timeout=120s || kubectl get pods
+
+      - name: Debug Pod Logs (if deployment fails)
+        if: failure()
+        run: |
+          POD_NAME=$(kubectl get pods -l app=django-app -o jsonpath="{.items[0].metadata.name}")
+          kubectl describe pod $POD_NAME
+          kubectl logs $POD_NAME
+
+      - name: Restart Deployment (if needed)
+        if: failure()
+        run: |
+          kubectl rollout restart deployment/django-app
+          kubectl rollout status deployment/django-app --timeout=120s
