@@ -11,15 +11,31 @@
 #       targetPort: 8000
 #   type: NodePort
 
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: django-service
+# spec:
+#   type: LoadBalancer
+#   selector:
+#     app: django
+#   ports:
+#     - protocol: TCP
+#       port: 8000
+#       targetPort: 8000
+
+
+
+
 apiVersion: v1
 kind: Service
 metadata:
   name: django-service
 spec:
-  type: LoadBalancer
+  type: NodePort  # Change to NodePort if using Minikube
   selector:
     app: django
   ports:
     - protocol: TCP
       port: 8000
-      targetPort: 8000
+      targetPort: 8080  # Ensure it matches containerPort in Deployment
